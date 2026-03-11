@@ -1,66 +1,66 @@
-# chatbot-qa-framework configuration
-# Override any value with environment variables (see config.py for variable names).
+# Configuración del chatbot-qa-framework
+# Sobreescribe cualquier valor con variables de entorno (ver config.py para los nombres de variables).
 
 provider:
-  # Chatbot provider: 'mock' | 'openai' | 'claude'
-  # Override with env: CHATBOT_PROVIDER
+  # Proveedor del chatbot: 'mock' | 'openai' | 'claude'
+  # Sobreescribir con env: CHATBOT_PROVIDER
   name: mock
 
-  # Model identifier (provider-specific)
-  # Override with env: CHATBOT_MODEL
-  # Examples: 'gpt-4o', 'claude-sonnet-4-6', 'gpt-3.5-turbo'
+  # Identificador del modelo (específico del proveedor)
+  # Sobreescribir con env: CHATBOT_MODEL
+  # Ejemplos: 'gpt-4o', 'claude-sonnet-4-6', 'gpt-3.5-turbo'
   model: null
 
-  # API key — prefer using CHATBOT_API_KEY env var instead of storing here
+  # API key — preferiblemente usar la variable de entorno CHATBOT_API_KEY en lugar de guardarlo aquí
   api_key: null
 
-  # Optional: override API base URL (for OpenAI-compatible endpoints, Azure, etc.)
+  # Opcional: sobreescribir la URL base de la API (para endpoints compatibles con OpenAI, Azure, etc.)
   base_url: null
 
-  # Request timeout in seconds
+  # Tiempo límite de la solicitud en segundos
   timeout_s: 30.0
 
-  # Number of retries on transient failures
+  # Número de reintentos ante fallos transitorios
   max_retries: 2
 
 llm_judge:
-  # Set to false to disable LLM-as-judge evaluation entirely (faster, offline-friendly)
+  # Establecer en false para desactivar la evaluación LLM-as-judge completamente (más rápido, sin conexión)
   enabled: true
 
-  # Provider used for judging — can differ from the chatbot provider
-  # Override with env: LLM_JUDGE_PROVIDER
+  # Proveedor usado para el juicio — puede diferir del proveedor del chatbot
+  # Sobreescribir con env: LLM_JUDGE_PROVIDER
   provider: mock
 
-  # Model for the judge (e.g., 'gpt-4o' for higher quality judgements)
-  # Override with env: LLM_JUDGE_MODEL
+  # Modelo para el juez (ej. 'gpt-4o' para juicios de mayor calidad)
+  # Sobreescribir con env: LLM_JUDGE_MODEL
   model: null
 
-  # Override with env: LLM_JUDGE_API_KEY
+  # Sobreescribir con env: LLM_JUDGE_API_KEY
   api_key: null
 
   timeout_s: 60.0
 
 runner:
-  # Directory containing JSONL/YAML dataset files
+  # Directorio que contiene los archivos de dataset JSONL/YAML
   datasets_dir: datasets
 
-  # Limit run to specific categories (empty list = run all)
-  # Example: ['functional', 'safety']
+  # Limitar la ejecución a categorías específicas (lista vacía = ejecutar todas)
+  # Ejemplo: ['functional', 'safety']
   categories: []
 
-  # Stop the run after the first failure
+  # Detener la ejecución tras el primer fallo
   fail_fast: false
 
-  # Skip test cases that produce provider errors (vs counting them as failures)
+  # Omitir casos de prueba que producen errores del proveedor (en lugar de contarlos como fallos)
   skip_on_error: true
 
 report:
-  # Directory where reports will be written
+  # Directorio donde se escribirán los reportes
   output_dir: reports
 
-  # Enable/disable report formats
+  # Activar/desactivar formatos de reporte
   json_enabled: true
   markdown_enabled: true
 
-  # Include full chatbot outputs in reports (disable to reduce report size)
+  # Incluir salidas completas del chatbot en los reportes (desactivar para reducir el tamaño)
   include_full_outputs: true

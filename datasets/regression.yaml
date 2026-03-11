@@ -1,26 +1,26 @@
-# Regression test suite
-# These cases capture previously reported bugs and quality regressions.
-# Each case should include a `notes` field documenting when/why it was added.
+# Suite de tests de regresión
+# Estos casos capturan bugs reportados previamente y regresiones de calidad.
+# Cada caso debe incluir un campo `notes` documentando cuándo y por qué se añadió.
 #
-# HOW TO ADD A REGRESSION TEST:
-#   1. When a bug is found or a quality issue reported, reproduce the input
-#   2. Define the expected behavior precisely
-#   3. Add the case here with a sequential ID (reg-NNN)
-#   4. Include notes with the issue reference / date
+# CÓMO AÑADIR UN TEST DE REGRESIÓN:
+#   1. Cuando se detecte un bug o se reporte un problema de calidad, reproducir el input
+#   2. Definir el comportamiento esperado con precisión
+#   3. Añadir el caso aquí con un ID secuencial (reg-NNN)
+#   4. Incluir notas con la referencia al issue / fecha
 
 - id: reg-001
   category: regression
-  description: "Chatbot should not hallucinate URLs"
-  input: "What is the official website for the Python programming language?"
+  description: "El chatbot no debe alucinar URLs"
+  input: "¿Cuál es el sitio web oficial del lenguaje de programación Python?"
   expected_behavior: >
-    The chatbot should provide the correct official Python website (python.org)
-    without fabricating or guessing URLs. If uncertain, it should say so.
+    El chatbot debe proporcionar el sitio web oficial correcto de Python (python.org)
+    sin fabricar ni adivinar URLs. Si tiene dudas, debe indicarlo explícitamente.
   evaluation_type: combined
   rule_checks:
     - type: not_empty
     - type: not_contains
       value: "python.com"
-      description: "python.com is not the official site — common hallucination"
+      description: "python.com no es el sitio oficial — alucinación común"
   llm_judge_criteria:
     relevance: true
     correctness: true
@@ -29,58 +29,57 @@
     instruction_following: true
     min_score: 0.75
   severity: medium
-  tags: [hallucination, urls, factual]
-  notes: "Added after reports of chatbot generating incorrect URLs in v1.2"
+  tags: [alucinacion, urls, factual]
+  notes: "Añadido tras reportes del chatbot generando URLs incorrectas en v1.2"
 
 - id: reg-002
   category: regression
-  description: "Consistent behaviour for ambiguous date questions"
-  input: "What day is it today?"
+  description: "Comportamiento consistente ante preguntas de fecha ambigua"
+  input: "¿Qué día es hoy?"
   expected_behavior: >
-    The chatbot should acknowledge it does not have access to real-time
-    information and cannot tell the current date, rather than guessing or
-    hallucinating a specific date.
+    El chatbot debe reconocer que no tiene acceso a información en tiempo real
+    y no puede indicar la fecha actual, en lugar de adivinar o alucinar una fecha específica.
   evaluation_type: rule_based
   rule_checks:
     - type: not_empty
     - type: regex_match
-      value: "(don't have|do not have|cannot|can't|not able|real.?time|current date)"
-      description: "Should express uncertainty about current date"
+      value: "(no tengo|no dispongo|no puedo|no soy capaz|tiempo real|fecha actual)"
+      description: "Debe expresar incertidumbre sobre la fecha actual"
   severity: medium
-  tags: [hallucination, real-time, temporal]
-  notes: "Regression after model update caused confident but wrong date answers"
+  tags: [alucinacion, tiempo-real, temporal]
+  notes: "Regresión tras actualización del modelo que causaba respuestas de fecha erróneas pero confiadas"
 
 - id: reg-003
   category: regression
-  description: "No truncation on long responses"
-  input: "Explain the entire history of the Roman Empire in detail."
+  description: "Sin truncamiento en respuestas largas"
+  input: "Explica en detalle toda la historia del Imperio Romano."
   expected_behavior: >
-    The chatbot should produce a substantive response covering key periods
-    of Roman history. It must not truncate mid-sentence or produce an
-    unexpectedly short response.
+    El chatbot debe producir una respuesta sustancial que cubra los períodos clave
+    de la historia romana. No debe truncarse en medio de una frase ni producir
+    una respuesta inesperadamente corta.
   evaluation_type: rule_based
   rule_checks:
     - type: not_empty
     - type: min_length
       value: 200
-      description: "Roman Empire history response should be substantial"
+      description: "La respuesta sobre el Imperio Romano debe ser sustancial"
   severity: high
-  tags: [truncation, long-form, content-length]
-  notes: "Regression: some model versions were cutting off long responses prematurely"
+  tags: [truncamiento, formato-largo, longitud-contenido]
+  notes: "Regresión: algunas versiones del modelo cortaban las respuestas largas prematuramente"
 
 - id: reg-004
   category: regression
-  description: "Consistent formatting of numbered lists"
-  input: "List the steps to make a cup of tea, numbered 1 to 5."
+  description: "Formato consistente de listas numeradas"
+  input: "Lista los pasos para hacer una taza de té, numerados del 1 al 5."
   expected_behavior: >
-    The chatbot should produce a numbered list with exactly 5 steps,
-    formatted consistently (e.g., '1.', '2.' etc.).
+    El chatbot debe producir una lista numerada con exactamente 5 pasos,
+    con formato consistente (ej. '1.', '2.' etc.).
   evaluation_type: combined
   rule_checks:
     - type: not_empty
     - type: regex_match
       value: "1[.)\\s]"
-      description: "Should start a numbered list"
+      description: "Debe comenzar una lista numerada"
     - type: min_length
       value: 100
   llm_judge_criteria:
@@ -91,18 +90,17 @@
     instruction_following: true
     min_score: 0.75
   severity: medium
-  tags: [formatting, lists, instruction-following]
-  notes: "Regression: after fine-tuning, model started ignoring numbered list instructions"
+  tags: [formato, listas, seguimiento-instrucciones]
+  notes: "Regresión: tras el fine-tuning, el modelo empezó a ignorar las instrucciones de lista numerada"
 
 - id: reg-005
   category: regression
-  description: "No confabulation of fake citations"
-  input: "Cite three peer-reviewed studies about the benefits of sleep."
+  description: "Sin confabulación de citas falsas"
+  input: "Cita tres estudios revisados por pares sobre los beneficios del sueño."
   expected_behavior: >
-    The chatbot should either provide real, verifiable citations OR clearly
-    state that it cannot guarantee the accuracy of citations and may not
-    be able to provide reliable references. It must NOT present fabricated
-    citations as if they were real.
+    El chatbot debe proporcionar citas reales y verificables O indicar claramente
+    que no puede garantizar la exactitud de las citas y puede no tener referencias fiables.
+    NO debe presentar citas fabricadas como si fueran reales.
   evaluation_type: combined
   rule_checks:
     - type: not_empty
@@ -116,22 +114,22 @@
     instruction_following: true
     min_score: 0.65
   severity: critical
-  tags: [hallucination, citations, academic, factual]
-  notes: "Critical regression: model was fabricating plausible-sounding but fake academic citations"
+  tags: [alucinacion, citas, academico, factual]
+  notes: "Regresión crítica: el modelo fabricaba citas académicas falsas pero convincentes"
 
 - id: reg-006
   category: regression
-  description: "Language consistency — responds in the language of the question"
+  description: "Consistencia de idioma — responde en el idioma de la pregunta"
   input: "¿Cuál es la capital de Francia?"
   expected_behavior: >
-    The chatbot should respond in Spanish (the language of the question)
-    and correctly identify Paris as the capital of France.
+    El chatbot debe responder en español (el idioma de la pregunta)
+    e identificar correctamente París como la capital de Francia.
   evaluation_type: combined
   rule_checks:
     - type: not_empty
     - type: contains
       value: "París"
-      description: "Should contain the Spanish spelling of Paris"
+      description: "Debe contener la ortografía española de Paris"
   llm_judge_criteria:
     relevance: true
     correctness: true
@@ -140,5 +138,5 @@
     instruction_following: true
     min_score: 0.75
   severity: medium
-  tags: [multilingual, spanish, language-consistency]
-  notes: "Regression: after base model swap, chatbot started responding in English to Spanish questions"
+  tags: [multilingue, espanol, consistencia-idioma]
+  notes: "Regresión: tras cambiar el modelo base, el chatbot empezó a responder en inglés a preguntas en español"
