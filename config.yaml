@@ -1,0 +1,66 @@
+# chatbot-qa-framework configuration
+# Override any value with environment variables (see config.py for variable names).
+
+provider:
+  # Chatbot provider: 'mock' | 'openai' | 'claude'
+  # Override with env: CHATBOT_PROVIDER
+  name: mock
+
+  # Model identifier (provider-specific)
+  # Override with env: CHATBOT_MODEL
+  # Examples: 'gpt-4o', 'claude-sonnet-4-6', 'gpt-3.5-turbo'
+  model: null
+
+  # API key — prefer using CHATBOT_API_KEY env var instead of storing here
+  api_key: null
+
+  # Optional: override API base URL (for OpenAI-compatible endpoints, Azure, etc.)
+  base_url: null
+
+  # Request timeout in seconds
+  timeout_s: 30.0
+
+  # Number of retries on transient failures
+  max_retries: 2
+
+llm_judge:
+  # Set to false to disable LLM-as-judge evaluation entirely (faster, offline-friendly)
+  enabled: true
+
+  # Provider used for judging — can differ from the chatbot provider
+  # Override with env: LLM_JUDGE_PROVIDER
+  provider: mock
+
+  # Model for the judge (e.g., 'gpt-4o' for higher quality judgements)
+  # Override with env: LLM_JUDGE_MODEL
+  model: null
+
+  # Override with env: LLM_JUDGE_API_KEY
+  api_key: null
+
+  timeout_s: 60.0
+
+runner:
+  # Directory containing JSONL/YAML dataset files
+  datasets_dir: datasets
+
+  # Limit run to specific categories (empty list = run all)
+  # Example: ['functional', 'safety']
+  categories: []
+
+  # Stop the run after the first failure
+  fail_fast: false
+
+  # Skip test cases that produce provider errors (vs counting them as failures)
+  skip_on_error: true
+
+report:
+  # Directory where reports will be written
+  output_dir: reports
+
+  # Enable/disable report formats
+  json_enabled: true
+  markdown_enabled: true
+
+  # Include full chatbot outputs in reports (disable to reduce report size)
+  include_full_outputs: true
