@@ -1,10 +1,10 @@
 """
-Abstract base class for chatbot providers.
+Clase base abstracta para proveedores de chatbot.
 
-To add a new chatbot backend:
-  1. Subclass ChatbotProvider
-  2. Implement the `chat` method
-  3. Register it in get_provider() below
+Para añadir un nuevo backend de chatbot:
+  1. Heredar de ChatbotProvider
+  2. Implementar el método `chat`
+  3. Registrarlo en get_provider() más abajo
 """
 
 from __future__ import annotations
@@ -17,20 +17,20 @@ from chatbot_qa.models import Message
 
 class ChatbotProvider(ABC):
     """
-    Minimal interface that every chatbot backend must implement.
+    Interfaz mínima que todo backend de chatbot debe implementar.
 
-    The runner only depends on this interface, making it trivial to swap
-    providers without changing any evaluation logic.
+    El runner solo depende de esta interfaz, lo que permite intercambiar
+    proveedores sin modificar ninguna lógica de evaluación.
     """
 
     @property
     @abstractmethod
     def name(self) -> str:
-        """Human-readable identifier for this provider (used in reports)."""
+        """Identificador legible por humanos para este proveedor (usado en reportes)."""
 
     @property
     def model(self) -> Optional[str]:
-        """Model identifier, if applicable."""
+        """Identificador del modelo, si aplica."""
         return None
 
     @abstractmethod
@@ -41,30 +41,30 @@ class ChatbotProvider(ABC):
         system_prompt: Optional[str] = None,
     ) -> str:
         """
-        Send a message to the chatbot and return its text response.
+        Envía un mensaje al chatbot y devuelve su respuesta en texto.
 
         Args:
-            user_message:  The current user turn.
-            history:       Prior conversation turns (role + content).
-            system_prompt: Optional system-level instruction.
+            user_message:  El turno actual del usuario.
+            history:       Turnos previos de la conversación (role + content).
+            system_prompt: Instrucción de sistema opcional.
 
         Returns:
-            The chatbot's text response.
+            La respuesta en texto del chatbot.
 
         Raises:
-            ChatbotProviderError: On any communication or API error.
+            ChatbotProviderError: Ante cualquier error de comunicación o API.
         """
 
 
 class ChatbotProviderError(Exception):
-    """Raised when a provider fails to produce a response."""
+    """Se lanza cuando un proveedor no consigue producir una respuesta."""
 
 
 def get_provider(provider_name: str, **kwargs: object) -> ChatbotProvider:
     """
-    Factory: return a ChatbotProvider instance by name.
+    Fábrica: devuelve una instancia de ChatbotProvider por nombre.
 
-    Supported names: 'mock', 'openai', 'claude'
+    Nombres soportados: 'mock', 'openai', 'claude'
     """
     from chatbot_qa.runner.providers.mock_provider import MockProvider
     from chatbot_qa.runner.providers.openai_provider import OpenAIProvider
@@ -79,7 +79,7 @@ def get_provider(provider_name: str, **kwargs: object) -> ChatbotProvider:
     cls = providers.get(provider_name.lower())
     if cls is None:
         raise ValueError(
-            f"Unknown provider '{provider_name}'. "
-            f"Available: {list(providers.keys())}"
+            f"Proveedor desconocido '{provider_name}'. "
+            f"Disponibles: {list(providers.keys())}"
         )
     return cls(**kwargs)  # type: ignore[arg-type]

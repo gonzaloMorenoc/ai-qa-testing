@@ -1,9 +1,9 @@
 """
-Core data models for the chatbot QA framework.
+Modelos de datos principales del framework de QA para chatbots.
 
-All models use Pydantic v2 for runtime validation, serialization and
-IDE auto-completion support. These are the shared contracts between
-runner, evaluators, metrics and reporters.
+Todos los modelos usan Pydantic v2 para validación en tiempo de ejecución,
+serialización y soporte de autocompletado en el IDE. Son los contratos
+compartidos entre el runner, los evaluadores, las métricas y los reportes.
 """
 
 from __future__ import annotations
@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 
 
 # ---------------------------------------------------------------------------
-# Enumerations
+# Enumeraciones
 # ---------------------------------------------------------------------------
 
 class Category(str, Enum):
@@ -47,21 +47,21 @@ class TestStatus(str, Enum):
 
 
 # ---------------------------------------------------------------------------
-# Test case definition
+# Definición del caso de prueba
 # ---------------------------------------------------------------------------
 
 class Message(BaseModel):
-    """A single message in a conversation."""
-    role: str = Field(..., description="'user' or 'assistant'")
+    """Un único mensaje dentro de una conversación."""
+    role: str = Field(..., description="'user' o 'assistant'")
     content: str
 
 
 class RuleCheck(BaseModel):
-    """Configuration for a single rule-based check."""
+    """Configuración para una comprobación de regla individual."""
     type: str = Field(
         ...,
         description=(
-            "One of: contains, not_contains, regex_match, min_length, "
+            "Uno de: contains, not_contains, regex_match, min_length, "
             "max_length, not_empty, json_valid, starts_with, ends_with"
         ),
     )
@@ -70,7 +70,7 @@ class RuleCheck(BaseModel):
 
 
 class LLMJudgeCriteria(BaseModel):
-    """Rubric passed to the LLM-as-judge evaluator."""
+    """Rúbrica de criterios que se pasa al evaluador LLM-as-judge."""
     relevance: bool = True
     correctness: bool = True
     clarity: bool = True
@@ -81,7 +81,7 @@ class LLMJudgeCriteria(BaseModel):
 
 
 class SafetyCheckConfig(BaseModel):
-    """Configuration for safety checks on a test case."""
+    """Configuración de las comprobaciones de seguridad para un caso de prueba."""
     check_prompt_injection: bool = False
     check_system_prompt_leak: bool = False
     check_unsafe_content: bool = False
@@ -90,44 +90,45 @@ class SafetyCheckConfig(BaseModel):
 
 class TestCase(BaseModel):
     """
-    A single test case to be executed against the chatbot.
+    Un caso de prueba individual a ejecutar contra el chatbot.
 
-    Supports both single-turn (input only) and multi-turn (history + input)
-    conversations. All evaluation configuration is embedded in the case so
-    that the runner and evaluators are fully data-driven.
+    Soporta conversaciones de un solo turno (solo input) y multi-turno
+    (historial + input). Toda la configuración de evaluación está embebida
+    en el propio caso, de modo que el runner y los evaluadores son
+    completamente orientados a datos.
     """
     id: str
     category: Category
     description: Optional[str] = None
 
-    # Conversation
-    input: str = Field(..., description="The final user message to send")
+    # Conversación
+    input: str = Field(..., description="El mensaje de usuario final a enviar")
     conversation_history: list[Message] = Field(
         default_factory=list,
-        description="Prior turns for multi-turn tests (role/content pairs)",
+        description="Turnos previos para tests multi-turno (pares role/content)",
     )
     system_prompt: Optional[str] = Field(
         default=None,
-        description="Optional system prompt to prepend to the conversation",
+        description="System prompt opcional a anteponer a la conversación",
     )
 
-    # Expected behaviour description (human-readable, used as LLM judge context)
+    # Descripción del comportamiento esperado (legible por humanos, usada como contexto para el juez LLM)
     expected_behavior: str
 
-    # Evaluation configuration
+    # Configuración de evaluación
     evaluation_type: EvaluationType
     rule_checks: list[RuleCheck] = Field(default_factory=list)
     llm_judge_criteria: Optional[LLMJudgeCriteria] = None
     safety_config: Optional[SafetyCheckConfig] = None
 
-    # Metadata
+    # Metadatos
     severity: Severity = Severity.MEDIUM
     tags: list[str] = Field(default_factory=list)
     notes: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------
-# Evaluation results
+# Resultados de evaluación
 # ---------------------------------------------------------------------------
 
 class RuleCheckResult(BaseModel):
@@ -158,7 +159,7 @@ class SafetyCheckResult(BaseModel):
 
 
 class EvaluationResult(BaseModel):
-    """Aggregated evaluation outcome for a single test case execution."""
+    """Resultado de evaluación agregado para la ejecución de un caso de prueba."""
     passed: bool
     score: Optional[float] = None
     rule_results: list[RuleCheckResult] = Field(default_factory=list)
@@ -168,11 +169,11 @@ class EvaluationResult(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Test execution result
+# Resultado de ejecución de test
 # ---------------------------------------------------------------------------
 
 class TestResult(BaseModel):
-    """Full record of a single test case execution."""
+    """Registro completo de la ejecución de un caso de prueba."""
     test_case: TestCase
     chatbot_output: Optional[str] = None
     duration_ms: float
@@ -187,7 +188,7 @@ class TestResult(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Aggregate report
+# Reporte agregado
 # ---------------------------------------------------------------------------
 
 class CategoryStats(BaseModel):
@@ -213,7 +214,7 @@ class Metrics(BaseModel):
 
 
 class Report(BaseModel):
-    """Top-level evaluation report produced after a full test run."""
+    """Reporte de evaluación de alto nivel generado tras una ejecución completa de tests."""
     run_id: str
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     provider: str

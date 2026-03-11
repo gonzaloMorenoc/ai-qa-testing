@@ -1,16 +1,16 @@
 """
-Test runner: orchestrates loading, execution and evaluation of all test cases.
+Runner de tests: orquesta la carga, ejecución y evaluación de todos los casos de prueba.
 
-The runner is intentionally stateless between test cases. Each case is
-independent. For multi-turn tests, conversation history is embedded in the
-TestCase itself — the runner does not maintain session state externally.
+El runner es intencionalmente sin estado entre casos de prueba. Cada caso es
+independiente. Para los tests multi-turno, el historial de conversación está
+embebido en el propio TestCase — el runner no mantiene estado de sesión externamente.
 
-Architecture:
+Arquitectura:
   TestRunner
-    ├── loads TestCase list from DatasetLoader
-    ├── calls ChatbotProvider.chat() for each case
-    ├── passes (TestCase, response) to each Evaluator
-    └── collects TestResult list → passed to MetricsAggregator and Reporters
+    ├── carga la lista TestCase desde DatasetLoader
+    ├── llama a ChatbotProvider.chat() para cada caso
+    ├── pasa (TestCase, respuesta) a cada Evaluador
+    └── recopila la lista TestResult → se pasa a MetricsAggregator y Reporters
 """
 
 from __future__ import annotations
@@ -47,9 +47,9 @@ logger = logging.getLogger(__name__)
 
 class TestRunner:
     """
-    Orchestrates a full evaluation run.
+    Orquesta una ejecución completa de evaluación.
 
-    Usage:
+    Uso:
         runner = TestRunner(config, provider)
         report = runner.run()
     """
@@ -65,7 +65,7 @@ class TestRunner:
         self._evaluators = self._build_evaluators(extra_evaluators or [])
 
     # ------------------------------------------------------------------
-    # Public API
+    # API pública
     # ------------------------------------------------------------------
 
     def run(
@@ -74,33 +74,33 @@ class TestRunner:
         run_id: Optional[str] = None,
     ) -> Report:
         """
-        Execute all test cases and return a fully populated Report.
+        Ejecuta todos los casos de prueba y devuelve un Report completamente poblado.
 
         Args:
-            cases:  Optional pre-loaded test cases. If None, loads from
+            cases:  Casos de prueba opcionales pre-cargados. Si es None, carga desde
                     config.runner.datasets_dir.
-            run_id: Optional identifier for this run. Auto-generated if None.
+            run_id: Identificador opcional para este run. Se genera automáticamente si es None.
         """
         run_id = run_id or str(uuid.uuid4())[:8]
-        logger.info("Starting test run %s with provider '%s'", run_id, self._provider.name)
+        logger.info("Iniciando ejecución %s con el proveedor '%s'", run_id, self._provider.name)
 
         if cases is None:
             cases = self._load_cases()
 
         if not cases:
-            logger.warning("No test cases found — check your datasets directory.")
+            logger.warning("No se encontraron casos de prueba — comprueba el directorio de datasets.")
 
         validation = validate_dataset(cases)
         if not validation.is_valid:
-            logger.error("Dataset validation failed:\n%s", validation.summary())
+            logger.error("La validación del dataset falló:\n%s", validation.summary())
             if self._config.runner.fail_fast:
-                raise ValueError(f"Dataset validation errors:\n{validation.summary()}")
+                raise ValueError(f"Errores de validación del dataset:\n{validation.summary()}")
         elif validation.warnings:
-            logger.warning("Dataset warnings:\n%s", validation.summary())
+            logger.warning("Advertencias del dataset:\n%s", validation.summary())
 
         results: list[TestResult] = []
         for i, case in enumerate(cases, start=1):
-            logger.info("[%d/%d] Running: %s (%s)", i, len(cases), case.id, case.category.value)
+            logger.info("[%d/%d] Ejecutando: %s (%s)", i, len(cases), case.id, case.category.value)
             result = self._run_single(case)
             results.append(result)
 
@@ -114,7 +114,7 @@ class TestRunner:
             )
 
             if self._config.runner.fail_fast and result.status == TestStatus.FAILED:
-                logger.warning("Fail-fast triggered at case %s", case.id)
+                logger.warning("Fail-fast activado en el caso %s", case.id)
                 break
 
         metrics = compute_metrics(results)
@@ -127,7 +127,7 @@ class TestRunner:
             results=results,
         )
         logger.info(
-            "Run %s complete — %d/%d passed (%.1f%%)",
+            "Ejecución %s completada — %d/%d aprobados (%.1f%%)",
             run_id,
             metrics.passed,
             metrics.total,
@@ -136,7 +136,7 @@ class TestRunner:
         return report
 
     # ------------------------------------------------------------------
-    # Internal helpers
+    # Métodos auxiliares internos
     # ------------------------------------------------------------------
 
     def _load_cases(self) -> list[TestCase]:
@@ -145,7 +145,7 @@ class TestRunner:
         return load_all_datasets(datasets_dir, categories=categories)
 
     def _run_single(self, case: TestCase) -> TestResult:
-        """Execute one test case: invoke provider, then evaluate the response."""
+        """Ejecuta un caso de prueba: invoca el proveedor y luego evalúa la respuesta."""
         start = time.monotonic()
         chatbot_output: Optional[str] = None
         error: Optional[str] = None
@@ -157,13 +157,13 @@ class TestRunner:
                 history=case.conversation_history,
                 system_prompt=case.system_prompt,
             )
-            status = TestStatus.PASSED  # Tentative — evaluators may downgrade
+            status = TestStatus.PASSED  # Provisional — los evaluadores pueden rebajar esto
         except ChatbotProviderError as e:
             error = str(e)
-            logger.warning("Provider error for %s: %s", case.id, e)
+            logger.warning("Error del proveedor para %s: %s", case.id, e)
         except Exception as e:
-            error = f"Unexpected error: {e}"
-            logger.exception("Unexpected error running case %s", case.id)
+            error = f"Error inesperado: {e}"
+            logger.exception("Error inesperado ejecutando el caso %s", case.id)
 
         duration_ms = (time.monotonic() - start) * 1000
 
@@ -184,7 +184,7 @@ class TestRunner:
         )
 
     def _evaluate(self, case: TestCase, output: str) -> EvaluationResult:
-        """Run all applicable evaluators and merge results."""
+        """Ejecuta todos los evaluadores aplicables y fusiona los resultados."""
         all_rule_results = []
         llm_judge_result = None
         safety_result = None
@@ -222,13 +222,13 @@ class TestRunner:
         )
 
     def _build_evaluators(self, extras: list[BaseEvaluator]) -> list[BaseEvaluator]:
-        """Instantiate the default evaluator stack."""
+        """Instancia la pila de evaluadores por defecto."""
         evaluators: list[BaseEvaluator] = [
             RuleBasedEvaluator(),
             SafetyEvaluator(),
         ]
 
-        # LLM judge is only added if enabled in config
+        # El juez LLM solo se añade si está habilitado en la configuración
         if self._config.llm_judge.enabled:
             from chatbot_qa.evaluators.llm_judge import LLMJudgeEvaluator
             evaluators.append(LLMJudgeEvaluator(self._config.llm_judge))

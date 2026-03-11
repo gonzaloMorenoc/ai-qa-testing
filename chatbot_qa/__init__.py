@@ -1,14 +1,14 @@
 """
-chatbot_qa - A modular framework for AI chatbot QA evaluation.
+chatbot_qa — Framework modular de QA para evaluación de chatbots de IA.
 
-Modules:
-    models      - Core data structures (TestCase, TestResult, EvaluationResult, Report)
-    config      - Configuration management
-    runner      - Test execution orchestration and chatbot provider abstraction
-    evaluators  - Rule-based, LLM-as-judge, and safety evaluators
-    datasets    - Dataset loading and validation
-    metrics     - Aggregated statistics computation
-    reports     - JSON and Markdown report generation
+Módulos:
+    models      - Estructuras de datos principales (TestCase, TestResult, EvaluationResult, Report)
+    config      - Gestión de configuración
+    runner      - Orquestación de la ejecución y abstracción del proveedor de chatbot
+    evaluators  - Evaluadores por reglas, LLM-as-judge y comprobaciones de seguridad
+    datasets    - Carga y validación de datasets
+    metrics     - Cálculo de estadísticas agregadas
+    reports     - Generación de reportes en JSON y Markdown
 """
 
 __version__ = "0.1.0"

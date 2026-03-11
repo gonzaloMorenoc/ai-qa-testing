@@ -1,1 +1,1 @@
-"""Metrics aggregation for test run results."""
+"""Agregación de métricas para los resultados de ejecución de tests."""

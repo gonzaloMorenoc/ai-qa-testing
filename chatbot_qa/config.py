@@ -1,8 +1,9 @@
 """
-Configuration management for the chatbot QA framework.
+Gestión de configuración del framework de QA para chatbots.
 
-Reads from a YAML config file and/or environment variables.
-Environment variables take precedence over file config (12-factor app style).
+Lee desde un archivo YAML y/o variables de entorno.
+Las variables de entorno tienen prioridad sobre el archivo de configuración
+(estilo 12-factor app).
 """
 
 from __future__ import annotations
@@ -35,8 +36,8 @@ class LLMJudgeConfig(BaseModel):
 
 class RunnerConfig(BaseModel):
     datasets_dir: Path = Path("datasets")
-    categories: list[str] = Field(default_factory=list)  # empty = all
-    max_concurrency: int = 1  # sequential by default; increase for async
+    categories: list[str] = Field(default_factory=list)  # vacío = todas
+    max_concurrency: int = 1  # secuencial por defecto; aumentar para async
     fail_fast: bool = False
     skip_on_error: bool = True
 
@@ -57,13 +58,14 @@ class Config(BaseModel):
 
 def load_config(path: Optional[Path] = None) -> Config:
     """
-    Load configuration from a YAML file, then apply environment variable
-    overrides for sensitive values (API keys, provider name, model).
+    Carga la configuración desde un archivo YAML y aplica después las
+    sobreescrituras de variables de entorno para valores sensibles
+    (claves de API, nombre del proveedor, modelo).
 
-    Lookup order (highest precedence first):
-      1. Environment variables
-      2. YAML config file
-      3. Built-in defaults
+    Orden de precedencia (mayor prioridad primero):
+      1. Variables de entorno
+      2. Archivo YAML de configuración
+      3. Valores por defecto incorporados
     """
     raw: dict = {}
 
@@ -74,7 +76,7 @@ def load_config(path: Optional[Path] = None) -> Config:
 
     config = Config.model_validate(raw)
 
-    # Environment variable overrides
+    # Sobreescrituras por variables de entorno
     if api_key := os.getenv("CHATBOT_API_KEY"):
         config.provider.api_key = api_key
     if provider := os.getenv("CHATBOT_PROVIDER"):

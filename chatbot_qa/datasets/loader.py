@@ -1,11 +1,11 @@
 """
-Dataset loader: reads JSONL and YAML test case files.
+Cargador de datasets: lee archivos JSONL y YAML de casos de prueba.
 
-Supports:
-  - .jsonl  - one JSON object per line (preferred for large datasets)
-  - .yaml / .yml  - YAML list of test case objects (preferred for readability)
+Soporta:
+  - .jsonl  - un objeto JSON por línea (preferido para datasets grandes)
+  - .yaml / .yml  - lista YAML de objetos de casos de prueba (preferido por legibilidad)
 
-Usage:
+Uso:
     from chatbot_qa.datasets.loader import load_dataset, load_all_datasets
 
     cases = load_dataset(Path("datasets/functional.jsonl"))
@@ -29,12 +29,12 @@ logger = logging.getLogger(__name__)
 
 def load_dataset(path: Path) -> list[TestCase]:
     """
-    Load test cases from a single JSONL or YAML file.
+    Carga casos de prueba desde un único archivo JSONL o YAML.
 
-    Malformed records are logged and skipped rather than crashing the run.
+    Los registros malformados se registran y se omiten en lugar de interrumpir la ejecución.
     """
     if not path.exists():
-        raise FileNotFoundError(f"Dataset file not found: {path}")
+        raise FileNotFoundError(f"Archivo de dataset no encontrado: {path}")
 
     suffix = path.suffix.lower()
     if suffix == ".jsonl":
@@ -42,7 +42,7 @@ def load_dataset(path: Path) -> list[TestCase]:
     elif suffix in (".yaml", ".yml"):
         return _load_yaml(path)
     else:
-        raise ValueError(f"Unsupported dataset format '{suffix}'. Use .jsonl or .yaml")
+        raise ValueError(f"Formato de dataset no soportado '{suffix}'. Usa .jsonl o .yaml")
 
 
 def load_all_datasets(
@@ -50,12 +50,12 @@ def load_all_datasets(
     categories: Optional[list[str]] = None,
 ) -> list[TestCase]:
     """
-    Load all dataset files from a directory, optionally filtering by category.
+    Carga todos los archivos de dataset de un directorio, opcionalmente filtrando por categoría.
 
-    Files are matched by name prefix: functional.*, safety.*, etc.
+    Los archivos se emparejan por prefijo de nombre: functional.*, safety.*, etc.
     """
     if not directory.is_dir():
-        raise NotADirectoryError(f"Datasets directory not found: {directory}")
+        raise NotADirectoryError(f"Directorio de datasets no encontrado: {directory}")
 
     all_cases: list[TestCase] = []
     target_categories = set(categories) if categories else None
@@ -64,17 +64,17 @@ def load_all_datasets(
         if path.suffix.lower() not in (".jsonl", ".yaml", ".yml"):
             continue
 
-        # Optional category filter by file stem
+        # Filtro de categoría opcional por nombre del archivo
         stem = path.stem.lower()
         if target_categories and not any(
             stem.startswith(cat) for cat in target_categories
         ):
-            logger.debug("Skipping %s (not in requested categories)", path.name)
+            logger.debug("Omitiendo %s (no está en las categorías solicitadas)", path.name)
             continue
 
         try:
             cases = load_dataset(path)
-            logger.info("Loaded %d test cases from %s", len(cases), path.name)
+            logger.info("Cargados %d casos de prueba desde %s", len(cases), path.name)
             all_cases.extend(cases)
         except Exception as exc:
             logger.error("Failed to load %s: %s", path.name, exc)

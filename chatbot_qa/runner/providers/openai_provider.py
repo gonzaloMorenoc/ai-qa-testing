@@ -1,12 +1,12 @@
 """
-OpenAI chatbot provider.
+Proveedor de chatbot OpenAI.
 
-Requires: openai>=1.0.0
-Install: pip install openai
+Requiere: openai>=1.0.0
+Instalar: pip install openai
 
-Set credentials via environment variables or config.yaml:
-  CHATBOT_API_KEY  - your OpenAI API key
-  CHATBOT_MODEL    - e.g. 'gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'
+Configurar credenciales via variables de entorno o config.yaml:
+  CHATBOT_API_KEY  - tu clave de API de OpenAI
+  CHATBOT_MODEL    - ej. 'gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'
 """
 
 from __future__ import annotations
@@ -22,10 +22,10 @@ from chatbot_qa.runner.providers.base_provider import (
 
 class OpenAIProvider(ChatbotProvider):
     """
-    Wraps the OpenAI Chat Completions API.
+    Envuelve la API de Chat Completions de OpenAI.
 
-    This provider is also compatible with any OpenAI-compatible endpoint
-    (e.g. local Ollama, Azure OpenAI) by overriding base_url.
+    Este proveedor también es compatible con cualquier endpoint compatible
+    con OpenAI (p.ej. Ollama local, Azure OpenAI) sobreescribiendo base_url.
     """
 
     def __init__(
@@ -41,8 +41,8 @@ class OpenAIProvider(ChatbotProvider):
             from openai import OpenAI, APIError, APITimeoutError
         except ImportError as e:
             raise ImportError(
-                "openai package is required for OpenAIProvider. "
-                "Install with: pip install openai"
+                "El paquete openai es necesario para OpenAIProvider. "
+                "Instalar con: pip install openai"
             ) from e
 
         self._model = model
@@ -90,9 +90,9 @@ class OpenAIProvider(ChatbotProvider):
             )
             content = response.choices[0].message.content
             if content is None:
-                raise ChatbotProviderError("OpenAI returned an empty response.")
+                raise ChatbotProviderError("OpenAI devolvió una respuesta vacía.")
             return content
         except self._APITimeoutError as e:
-            raise ChatbotProviderError(f"OpenAI request timed out: {e}") from e
+            raise ChatbotProviderError(f"La petición a OpenAI excedió el tiempo límite: {e}") from e
         except self._APIError as e:
-            raise ChatbotProviderError(f"OpenAI API error: {e}") from e
+            raise ChatbotProviderError(f"Error de la API de OpenAI: {e}") from e

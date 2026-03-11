@@ -1,71 +1,71 @@
 # chatbot-qa-framework
 
-A modular, extensible QA framework for evaluating AI chatbots. Designed for professional use in CI/CD pipelines, model comparison, and ongoing quality monitoring.
+Framework modular y extensible de QA para evaluar chatbots de IA. Diseñado para uso profesional en pipelines de CI/CD, comparación de modelos y monitoreo continuo de calidad.
 
 ---
 
-## Table of Contents
+## Tabla de contenidos
 
-- [Objective](#objective)
-- [Architecture](#architecture)
-- [Quick Start](#quick-start)
-- [How to Run Tests](#how-to-run-tests)
-- [How to Add Test Cases](#how-to-add-test-cases)
-- [How to Add New Evaluators](#how-to-add-new-evaluators)
-- [How to Connect a Real Chatbot](#how-to-connect-a-real-chatbot)
-- [How to Interpret Results](#how-to-interpret-results)
-- [CI/CD Integration](#cicd-integration)
-- [Configuration Reference](#configuration-reference)
-
----
-
-## Objective
-
-This framework allows teams to:
-
-1. **Execute tests** against any AI chatbot through a provider-agnostic interface
-2. **Evaluate response quality** automatically via rule-based checks, LLM-as-judge scoring, and safety heuristics
-3. **Detect regressions** by comparing results across model versions
-4. **Generate reports** in JSON (machine-readable) and Markdown (human-readable) formats
-5. **Integrate into CI/CD** pipelines with meaningful exit codes
+- [Objetivo](#objetivo)
+- [Arquitectura](#arquitectura)
+- [Inicio rápido](#inicio-rápido)
+- [Cómo ejecutar los tests](#cómo-ejecutar-los-tests)
+- [Cómo añadir casos de prueba](#cómo-añadir-casos-de-prueba)
+- [Cómo añadir nuevos evaluadores](#cómo-añadir-nuevos-evaluadores)
+- [Cómo conectar un chatbot real](#cómo-conectar-un-chatbot-real)
+- [Cómo interpretar los resultados](#cómo-interpretar-los-resultados)
+- [Integración con CI/CD](#integración-con-cicd)
+- [Referencia de configuración](#referencia-de-configuración)
 
 ---
 
-## Architecture
+## Objetivo
+
+Este framework permite a los equipos:
+
+1. **Ejecutar tests** contra cualquier chatbot de IA a través de una interfaz independiente del proveedor
+2. **Evaluar la calidad** de las respuestas automáticamente mediante reglas, puntuación LLM-as-judge y heurísticas de seguridad
+3. **Detectar regresiones** comparando resultados entre versiones del modelo
+4. **Generar reportes** en JSON (legible por máquinas) y Markdown (legible por personas)
+5. **Integrarse en CI/CD** con códigos de salida significativos
+
+---
+
+## Arquitectura
 
 ```
 chatbot_qa/
-├── models.py          # Pydantic data contracts (TestCase, TestResult, Report, etc.)
-├── config.py          # YAML + env-var configuration
+├── models.py          # Contratos de datos Pydantic (TestCase, TestResult, Report, etc.)
+├── config.py          # Configuración vía YAML y variables de entorno
 ├── runner/
-│   ├── test_runner.py             # Orchestrator: load → execute → evaluate → report
+│   ├── test_runner.py             # Orquestador: cargar → ejecutar → evaluar → reportar
 │   └── providers/
-│       ├── base_provider.py       # Abstract ChatbotProvider interface + factory
-│       ├── mock_provider.py       # Deterministic mock (no API needed)
-│       ├── openai_provider.py     # OpenAI / OpenAI-compatible endpoints
+│       ├── base_provider.py       # Interfaz abstracta ChatbotProvider + fábrica
+│       ├── mock_provider.py       # Mock determinista (sin necesidad de API)
+│       ├── openai_provider.py     # OpenAI / endpoints compatibles con OpenAI
 │       └── claude_provider.py     # Anthropic Claude
 ├── evaluators/
-│   ├── base_evaluator.py          # Abstract evaluator interface
-│   ├── rule_based.py              # Fast, deterministic checks
-│   ├── llm_judge.py               # LLM-as-judge with JSON rubric
-│   └── safety_checks.py          # Heuristic safety and injection detection
+│   ├── base_evaluator.py          # Interfaz abstracta de evaluadores
+│   ├── rule_based.py              # Comprobaciones rápidas y deterministas
+│   ├── llm_judge.py               # LLM-as-judge con rúbrica JSON
+│   └── safety_checks.py          # Seguridad: detección de inyecciones y contenido dañino
 ├── datasets/
-│   ├── loader.py                  # JSONL and YAML dataset reader
-│   └── validator.py               # Pre-run dataset validation
+│   ├── loader.py                  # Lector de datasets JSONL y YAML
+│   └── validator.py               # Validación previa al run
 ├── metrics/
-│   └── aggregator.py              # Aggregate stats computation
+│   └── aggregator.py              # Cálculo de estadísticas agregadas
 └── reports/
-    ├── json_reporter.py           # Machine-readable JSON output
-    └── markdown_reporter.py       # Human-readable Markdown summary
+    ├── json_reporter.py           # Salida JSON legible por máquinas
+    └── markdown_reporter.py       # Resumen Markdown legible por personas
 
-datasets/                          # Test case files (JSONL and YAML)
-reports/                           # Generated reports (gitignored)
-tests/                             # Unit tests for the framework
-run_evaluation.py                  # CLI entry point
-config.yaml                        # Default configuration
+datasets/                          # Archivos de casos de prueba (JSONL y YAML)
+reports/                           # Reportes generados (en .gitignore)
+tests/                             # Tests unitarios del framework
+run_evaluation.py                  # Punto de entrada CLI
+config.yaml                        # Configuración por defecto
 ```
 
-### Data Flow
+### Flujo de datos
 
 ```
 datasets/*.jsonl / *.yaml
@@ -76,13 +76,13 @@ datasets/*.jsonl / *.yaml
          ▼
      TestRunner
          │
-    for each case:
+    por cada caso:
          │
-         ├──► ChatbotProvider.chat()    ← swappable backend
+         ├──► ChatbotProvider.chat()    ← backend intercambiable
          │
          ├──► RuleBasedEvaluator
          ├──► SafetyEvaluator
-         └──► LLMJudgeEvaluator  ← optional, uses second provider
+         └──► LLMJudgeEvaluator  ← opcional, usa un segundo proveedor
                     │
                     ▼
              EvaluationResult
@@ -95,37 +95,37 @@ datasets/*.jsonl / *.yaml
    JSONReporter        MarkdownReporter
 ```
 
-### Design Principles
+### Principios de diseño
 
-- **Modular**: Runner, evaluators, datasets, and reporters are fully decoupled
-- **Data-driven**: All evaluation logic lives in the test case definition, not in code
-- **Provider-agnostic**: Add any LLM backend without touching the runner
-- **CI-friendly**: Non-zero exit codes on failures, machine-readable JSON output
+- **Modular**: runner, evaluadores, datasets y reportes están completamente desacoplados
+- **Orientado a datos**: toda la lógica de evaluación vive en la definición del caso, no en el código
+- **Independiente del proveedor**: añade cualquier backend LLM sin tocar el runner
+- **Compatible con CI**: códigos de salida con semántica clara, salida JSON legible por máquinas
 
 ---
 
-## Quick Start
+## Inicio rápido
 
-### 1. Install dependencies
+### 1. Instalar dependencias
 
 ```bash
 pip install -r requirements.txt
 ```
 
-For real chatbot providers, install the optional extras:
+Para proveedores de chatbots reales, instala los extras opcionales:
 
 ```bash
-pip install openai      # for OpenAI
-pip install anthropic   # for Claude
+pip install openai      # para OpenAI
+pip install anthropic   # para Claude
 ```
 
-### 2. Run with the mock provider (no API key needed)
+### 2. Ejecutar con el mock (sin API key)
 
 ```bash
 python run_evaluation.py --no-judge
 ```
 
-### 3. Run with OpenAI
+### 3. Ejecutar con OpenAI
 
 ```bash
 export CHATBOT_PROVIDER=openai
@@ -138,7 +138,7 @@ export LLM_JUDGE_MODEL=gpt-4o
 python run_evaluation.py
 ```
 
-### 4. Run with Claude
+### 4. Ejecutar con Claude
 
 ```bash
 export CHATBOT_PROVIDER=claude
@@ -150,34 +150,34 @@ python run_evaluation.py
 
 ---
 
-## How to Run Tests
+## Cómo ejecutar los tests
 
-### Full suite (all categories)
+### Suite completa (todas las categorías)
 
 ```bash
 python run_evaluation.py
 ```
 
-### Specific categories
+### Categorías específicas
 
 ```bash
 python run_evaluation.py --categories functional safety
 python run_evaluation.py --categories regression
 ```
 
-### Validate datasets only (no API calls)
+### Sólo validar datasets (sin llamadas a la API)
 
 ```bash
 python run_evaluation.py --validate-only
 ```
 
-### Stop after first failure
+### Detener al primer fallo
 
 ```bash
 python run_evaluation.py --fail-fast
 ```
 
-### Run framework unit tests
+### Ejecutar los tests unitarios del framework
 
 ```bash
 pytest tests/ -v
@@ -186,37 +186,37 @@ pytest tests/ -v --cov=chatbot_qa
 
 ---
 
-## How to Add Test Cases
+## Cómo añadir casos de prueba
 
-Test cases can be added to any `.jsonl` or `.yaml` file in the `datasets/` directory.
+Los casos de prueba pueden añadirse a cualquier archivo `.jsonl` o `.yaml` dentro del directorio `datasets/`.
 
-### Minimum required fields
+### Campos mínimos requeridos
 
 ```json
 {
-  "id": "unique-id-001",
+  "id": "id-unico-001",
   "category": "functional",
-  "input": "What is the capital of France?",
-  "expected_behavior": "Should correctly answer Paris.",
+  "input": "¿Cuál es la capital de Francia?",
+  "expected_behavior": "Debe responder correctamente que es París.",
   "evaluation_type": "rule_based",
   "severity": "medium"
 }
 ```
 
-### Full example with all options (JSONL)
+### Ejemplo completo con todas las opciones (JSONL)
 
 ```json
 {
   "id": "func-042",
   "category": "functional",
-  "description": "Capital city lookup",
-  "input": "What is the capital of France?",
-  "expected_behavior": "Should correctly identify Paris as the capital of France.",
+  "description": "Consulta de capital de país",
+  "input": "¿Cuál es la capital de Francia?",
+  "expected_behavior": "Debe identificar correctamente París como la capital de Francia.",
   "conversation_history": [],
-  "system_prompt": "You are a helpful geography assistant.",
+  "system_prompt": "Eres un asistente de geografía.",
   "evaluation_type": "combined",
   "rule_checks": [
-    { "type": "contains", "value": "Paris" },
+    { "type": "contains", "value": "París" },
     { "type": "min_length", "value": 5 },
     { "type": "max_length", "value": 500 }
   ],
@@ -229,153 +229,153 @@ Test cases can be added to any `.jsonl` or `.yaml` file in the `datasets/` direc
     "min_score": 0.75
   },
   "severity": "medium",
-  "tags": ["geography", "factual"]
+  "tags": ["geografía", "factual"]
 }
 ```
 
-### Multi-turn example (YAML)
+### Ejemplo multi-turno (YAML)
 
 ```yaml
 - id: mt-010
   category: multi_turn
-  input: "What was the city I just mentioned?"
+  input: "¿Cuál era la ciudad que mencioné?"
   conversation_history:
     - role: user
-      content: "I'm planning to visit Tokyo."
+      content: "Estoy planeando visitar Tokio."
     - role: assistant
-      content: "Tokyo is a fantastic destination!"
+      content: "¡Tokio es un destino fantástico!"
   expected_behavior: >
-    Should recall Tokyo from the conversation history.
+    Debe recordar Tokio del historial de conversación.
   evaluation_type: combined
   rule_checks:
     - type: contains
-      value: "Tokyo"
+      value: "Tokio"
   severity: high
 ```
 
-### Evaluation types
+### Tipos de evaluación
 
-| Type | Description |
+| Tipo | Descripción |
 |------|-------------|
-| `rule_based` | Only runs rule checks (fast, deterministic) |
-| `llm_judge` | Only LLM-as-judge scoring |
-| `safety` | Only safety heuristic checks |
-| `combined` | All applicable evaluators run |
+| `rule_based` | Solo ejecuta comprobaciones de reglas (rápido, determinista) |
+| `llm_judge` | Solo puntuación LLM-as-judge |
+| `safety` | Solo comprobaciones de seguridad heurísticas |
+| `combined` | Se ejecutan todos los evaluadores aplicables |
 
-### Available rule check types
+### Tipos de reglas disponibles
 
-| Type | Value example | Description |
-|------|---------------|-------------|
-| `not_empty` | — | Output must not be blank |
-| `contains` | `"Paris"` | Output must contain substring (case-insensitive) |
-| `not_contains` | `"error"` | Output must NOT contain substring |
-| `regex_match` | `"\\d+"` | Output must match regex pattern |
-| `min_length` | `50` | Output must be ≥ N characters |
-| `max_length` | `500` | Output must be ≤ N characters |
-| `json_valid` | — | Output must be parseable JSON |
-| `starts_with` | `"Here"` | Output must start with substring |
-| `ends_with` | `"."` | Output must end with substring |
+| Tipo | Ejemplo de valor | Descripción |
+|------|-----------------|-------------|
+| `not_empty` | — | La respuesta no debe estar vacía |
+| `contains` | `"París"` | La respuesta debe contener la subcadena (sin distinción de mayúsculas) |
+| `not_contains` | `"error"` | La respuesta NO debe contener la subcadena |
+| `regex_match` | `"\\d+"` | La respuesta debe coincidir con el patrón regex |
+| `min_length` | `50` | La respuesta debe tener ≥ N caracteres |
+| `max_length` | `500` | La respuesta debe tener ≤ N caracteres |
+| `json_valid` | — | La respuesta debe ser JSON válido |
+| `starts_with` | `"Aquí"` | La respuesta debe comenzar con la subcadena |
+| `ends_with` | `"."` | La respuesta debe terminar con la subcadena |
 
 ---
 
-## How to Add New Evaluators
+## Cómo añadir nuevos evaluadores
 
-1. Create a new file in `chatbot_qa/evaluators/`:
+1. Crea un nuevo archivo en `chatbot_qa/evaluators/`:
 
 ```python
-# chatbot_qa/evaluators/my_evaluator.py
+# chatbot_qa/evaluators/mi_evaluador.py
 from chatbot_qa.evaluators.base_evaluator import BaseEvaluator
 from chatbot_qa.models import EvaluationResult, TestCase
 
-class MyEvaluator(BaseEvaluator):
+class MiEvaluador(BaseEvaluator):
     def applies_to(self, case: TestCase) -> bool:
-        # Return True for cases this evaluator should run on
-        return "my-tag" in case.tags
+        # Devuelve True para los casos en los que debe ejecutarse este evaluador
+        return "mi-etiqueta" in case.tags
 
     def evaluate(self, case: TestCase, output: str) -> EvaluationResult:
-        passed = "expected phrase" in output.lower()
+        passed = "frase esperada" in output.lower()
         return EvaluationResult(
             passed=passed,
-            failure_reasons=[] if passed else ["Expected phrase not found"],
+            failure_reasons=[] if passed else ["No se encontró la frase esperada"],
         )
 ```
 
-2. Register it in `TestRunner._build_evaluators()` in `chatbot_qa/runner/test_runner.py`:
+2. Registrarlo en `TestRunner._build_evaluators()` en `chatbot_qa/runner/test_runner.py`:
 
 ```python
 def _build_evaluators(self, extras):
     evaluators = [
         RuleBasedEvaluator(),
         SafetyEvaluator(),
-        MyEvaluator(),   # ← add here
+        MiEvaluador(),   # ← añadir aquí
     ]
     ...
 ```
 
-Or inject it at runtime:
+O inyectarlo en tiempo de ejecución:
 
 ```python
-from chatbot_qa.evaluators.my_evaluator import MyEvaluator
-runner = TestRunner(config, provider, extra_evaluators=[MyEvaluator()])
+from chatbot_qa.evaluators.mi_evaluador import MiEvaluador
+runner = TestRunner(config, provider, extra_evaluators=[MiEvaluador()])
 ```
 
 ---
 
-## How to Connect a Real Chatbot
+## Cómo conectar un chatbot real
 
-### Use an existing provider
+### Usar un proveedor existente
 
-Set the required environment variables (see [Quick Start](#quick-start)).
+Establece las variables de entorno necesarias (ver [Inicio rápido](#inicio-rápido)).
 
-### Add a custom provider
+### Añadir un proveedor personalizado
 
 ```python
-# chatbot_qa/runner/providers/my_provider.py
+# chatbot_qa/runner/providers/mi_proveedor.py
 from chatbot_qa.runner.providers.base_provider import ChatbotProvider, ChatbotProviderError
 from chatbot_qa.models import Message
 from typing import Optional
 
-class MyProvider(ChatbotProvider):
+class MiProveedor(ChatbotProvider):
     def __init__(self, api_key: str, **kwargs):
-        self._client = MyClient(api_key=api_key)
+        self._client = MiCliente(api_key=api_key)
 
     @property
     def name(self) -> str:
-        return "my-chatbot"
+        return "mi-chatbot"
 
     def chat(self, user_message: str, history: list[Message], system_prompt: Optional[str] = None) -> str:
         try:
-            return self._client.send(user_message)
+            return self._client.enviar(user_message)
         except Exception as e:
             raise ChatbotProviderError(str(e)) from e
 ```
 
-Then register it in `chatbot_qa/runner/providers/base_provider.py`:
+Registrarlo en `chatbot_qa/runner/providers/base_provider.py`:
 
 ```python
 providers = {
     "mock": MockProvider,
     "openai": OpenAIProvider,
     "claude": ClaudeProvider,
-    "my-chatbot": MyProvider,  # ← add here
+    "mi-chatbot": MiProveedor,  # ← añadir aquí
 }
 ```
 
-Use it with: `CHATBOT_PROVIDER=my-chatbot python run_evaluation.py`
+Usarlo con: `CHATBOT_PROVIDER=mi-chatbot python run_evaluation.py`
 
 ---
 
-## How to Interpret Results
+## Cómo interpretar los resultados
 
-### Exit codes
+### Códigos de salida
 
-| Code | Meaning |
-|------|---------|
-| `0` | All tests passed |
-| `1` | Some non-critical tests failed |
-| `2` | Critical failures detected — block deployment |
+| Código | Significado |
+|--------|-------------|
+| `0` | Todos los tests pasaron |
+| `1` | Algunos tests no críticos fallaron |
+| `2` | Se detectaron fallos críticos — bloquear el despliegue |
 
-### JSON report structure
+### Estructura del reporte JSON
 
 ```json
 {
@@ -390,41 +390,41 @@ Use it with: `CHATBOT_PROVIDER=my-chatbot python run_evaluation.py`
     "avg_score": 0.82,
     "avg_latency_ms": 1234,
     "critical_failures": 0,
-    "by_category": { ... }
+    "by_category": { "...": "..." }
   },
-  "results": [...]
+  "results": ["..."]
 }
 ```
 
-### Markdown report sections
+### Secciones del reporte Markdown
 
-| Section | Content |
-|---------|---------|
-| Overview | Pass/fail summary table with all metrics |
-| Results by Category | Per-category breakdown |
-| Failed Tests | Detailed view of each failure with input, output, and reasons |
-| Recommendations | Automated action items based on failure patterns |
+| Sección | Contenido |
+|---------|-----------|
+| Overview | Tabla resumen de métricas de aprobación/fallo |
+| Resultados por categoría | Desglose por categoría |
+| Tests fallidos | Vista detallada de cada fallo con entrada, salida y motivos |
+| Recomendaciones | Acciones automatizadas basadas en los patrones de fallo |
 
-### Comparing versions
+### Comparación entre versiones
 
-To track regressions over time, save reports by run ID and diff the JSON:
+Para detectar regresiones, guarda los reportes por run_id y compara el JSON:
 
 ```bash
-# Run before model update
+# Ejecutar antes de la actualización del modelo
 python run_evaluation.py --output-dir reports/v1
 
-# Run after model update
+# Ejecutar después de la actualización del modelo
 python run_evaluation.py --output-dir reports/v2
 
-# Diff (example — adapt to your tooling)
+# Comparar métricas
 diff <(jq '.metrics' reports/v1/*.json) <(jq '.metrics' reports/v2/*.json)
 ```
 
 ---
 
-## CI/CD Integration
+## Integración con CI/CD
 
-### GitHub Actions example
+### Ejemplo con GitHub Actions
 
 ```yaml
 name: Chatbot QA
@@ -432,7 +432,7 @@ name: Chatbot QA
 on:
   pull_request:
   schedule:
-    - cron: "0 8 * * *"  # Daily at 08:00 UTC
+    - cron: "0 8 * * *"  # Diario a las 08:00 UTC
 
 jobs:
   qa:
@@ -440,15 +440,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Instalar dependencias
         run: pip install -r requirements.txt openai
 
-      - name: Run QA evaluation
+      - name: Ejecutar evaluación QA
         env:
           CHATBOT_PROVIDER: openai
           CHATBOT_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -456,7 +456,7 @@ jobs:
           LLM_JUDGE_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python run_evaluation.py
 
-      - name: Upload reports
+      - name: Subir reportes
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -464,29 +464,29 @@ jobs:
           path: reports/
 ```
 
-The pipeline will fail (`exit 1` or `exit 2`) automatically if tests fail, blocking the PR.
+El pipeline fallará automáticamente (`exit 1` o `exit 2`) si los tests fallan, bloqueando el PR.
 
 ---
 
-## Configuration Reference
+## Referencia de configuración
 
-All settings can be overridden via environment variables (higher priority than `config.yaml`).
+Todas las configuraciones pueden sobreescribirse con variables de entorno (mayor prioridad que `config.yaml`).
 
-| YAML key | Env variable | Default | Description |
-|----------|-------------|---------|-------------|
-| `provider.name` | `CHATBOT_PROVIDER` | `mock` | Provider name |
-| `provider.model` | `CHATBOT_MODEL` | `null` | Model identifier |
-| `provider.api_key` | `CHATBOT_API_KEY` | `null` | API key |
-| `provider.base_url` | `CHATBOT_BASE_URL` | `null` | Custom API endpoint |
-| `provider.timeout_s` | — | `30.0` | Request timeout (seconds) |
-| `provider.max_retries` | — | `2` | Retry attempts |
-| `llm_judge.enabled` | — | `true` | Enable/disable LLM judge |
-| `llm_judge.provider` | `LLM_JUDGE_PROVIDER` | `mock` | Judge provider |
-| `llm_judge.model` | `LLM_JUDGE_MODEL` | `null` | Judge model |
-| `llm_judge.api_key` | `LLM_JUDGE_API_KEY` | `null` | Judge API key |
-| `runner.datasets_dir` | — | `datasets` | Dataset files directory |
-| `runner.categories` | — | `[]` (all) | Category filter |
-| `runner.fail_fast` | — | `false` | Stop on first failure |
-| `report.output_dir` | — | `reports` | Report output directory |
-| `report.json_enabled` | — | `true` | Generate JSON report |
-| `report.markdown_enabled` | — | `true` | Generate Markdown report |
+| Clave YAML | Variable de entorno | Por defecto | Descripción |
+|------------|---------------------|-------------|-------------|
+| `provider.name` | `CHATBOT_PROVIDER` | `mock` | Nombre del proveedor |
+| `provider.model` | `CHATBOT_MODEL` | `null` | Identificador del modelo |
+| `provider.api_key` | `CHATBOT_API_KEY` | `null` | Clave de API |
+| `provider.base_url` | `CHATBOT_BASE_URL` | `null` | Endpoint personalizado |
+| `provider.timeout_s` | — | `30.0` | Tiempo límite de petición (segundos) |
+| `provider.max_retries` | — | `2` | Intentos de reintento |
+| `llm_judge.enabled` | — | `true` | Activar/desactivar el juez LLM |
+| `llm_judge.provider` | `LLM_JUDGE_PROVIDER` | `mock` | Proveedor del juez |
+| `llm_judge.model` | `LLM_JUDGE_MODEL` | `null` | Modelo del juez |
+| `llm_judge.api_key` | `LLM_JUDGE_API_KEY` | `null` | Clave de API del juez |
+| `runner.datasets_dir` | — | `datasets` | Directorio de archivos de datasets |
+| `runner.categories` | — | `[]` (todos) | Filtro de categorías |
+| `runner.fail_fast` | — | `false` | Detener al primer fallo |
+| `report.output_dir` | — | `reports` | Directorio de salida de reportes |
+| `report.json_enabled` | — | `true` | Generar reporte JSON |
+| `report.markdown_enabled` | — | `true` | Generar reporte Markdown |

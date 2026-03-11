@@ -1,1 +1,1 @@
-"""Evaluator implementations for rule-based, LLM-as-judge, and safety checks."""
+"""Implementaciones de evaluadores: por reglas, LLM-as-judge y comprobaciones de seguridad."""

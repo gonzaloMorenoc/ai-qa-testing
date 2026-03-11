@@ -1,12 +1,12 @@
 """
-Anthropic Claude chatbot provider.
+Proveedor de chatbot Anthropic Claude.
 
-Requires: anthropic>=0.25.0
-Install: pip install anthropic
+Requiere: anthropic>=0.25.0
+Instalar: pip install anthropic
 
-Set credentials via environment variables or config.yaml:
-  CHATBOT_API_KEY  - your Anthropic API key
-  CHATBOT_MODEL    - e.g. 'claude-sonnet-4-6', 'claude-haiku-4-5-20251001'
+Configurar credenciales via variables de entorno o config.yaml:
+  CHATBOT_API_KEY  - tu clave de API de Anthropic
+  CHATBOT_MODEL    - ej. 'claude-sonnet-4-6', 'claude-haiku-4-5-20251001'
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ from chatbot_qa.runner.providers.base_provider import (
 
 
 class ClaudeProvider(ChatbotProvider):
-    """Wraps the Anthropic Messages API."""
+    """Envuelve la API de Messages de Anthropic."""
 
     def __init__(
         self,
@@ -35,8 +35,8 @@ class ClaudeProvider(ChatbotProvider):
             import anthropic
         except ImportError as e:
             raise ImportError(
-                "anthropic package is required for ClaudeProvider. "
-                "Install with: pip install anthropic"
+                "El paquete anthropic es necesario para ClaudeProvider. "
+                "Instalar con: pip install anthropic"
             ) from e
 
         self._model = model
@@ -83,8 +83,8 @@ class ClaudeProvider(ChatbotProvider):
             block = response.content[0]
             if hasattr(block, "text"):
                 return block.text
-            raise ChatbotProviderError("Claude returned a non-text content block.")
+            raise ChatbotProviderError("Claude devolvió un bloque de contenido no textual.")
         except self._anthropic.APITimeoutError as e:
-            raise ChatbotProviderError(f"Claude request timed out: {e}") from e
+            raise ChatbotProviderError(f"La petición a Claude excedió el tiempo límite: {e}") from e
         except self._anthropic.APIError as e:
-            raise ChatbotProviderError(f"Claude API error: {e}") from e
+            raise ChatbotProviderError(f"Error de la API de Claude: {e}") from e

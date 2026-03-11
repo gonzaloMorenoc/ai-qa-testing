@@ -1,19 +1,20 @@
 """
-Rule-based evaluator.
+Evaluador por reglas.
 
-Performs deterministic, fast checks on the chatbot output without any
-external API calls. These run on every test case that has rule_checks defined.
+Realiza comprobaciones deterministas y rápidas sobre la salida del chatbot
+sin ninguna llamada a API externa. Se ejecuta en todo caso de prueba que
+tenga rule_checks definidos.
 
-Supported rule types:
-  - not_empty        Output must not be empty or whitespace-only
-  - contains         Output must contain a literal substring
-  - not_contains     Output must NOT contain a literal substring
-  - regex_match      Output must match a regex pattern
-  - min_length       Output must be at least N characters
-  - max_length       Output must be at most N characters
-  - json_valid       Output must be valid JSON
-  - starts_with      Output must start with a substring
-  - ends_with        Output must end with a substring
+Tipos de regla soportados:
+  - not_empty        La salida no debe estar vacía ni ser solo espacios
+  - contains         La salida debe contener una subcadena literal
+  - not_contains     La salida NO debe contener una subcadena literal
+  - regex_match      La salida debe coincidir con un patrón regex
+  - min_length       La salida debe tener al menos N caracteres
+  - max_length       La salida debe tener como máximo N caracteres
+  - json_valid       La salida debe ser JSON válido
+  - starts_with      La salida debe comenzar con una subcadena
+  - ends_with        La salida debe terminar con una subcadena
 """
 
 from __future__ import annotations
@@ -32,7 +33,7 @@ from chatbot_qa.models import (
 
 
 class RuleBasedEvaluator(BaseEvaluator):
-    """Runs all configured rule_checks for a test case."""
+    """Ejecuta todas las rule_checks configuradas para un caso de prueba."""
 
     def applies_to(self, case: TestCase) -> bool:
         return bool(case.rule_checks) or case.evaluation_type in (
@@ -44,12 +45,12 @@ class RuleBasedEvaluator(BaseEvaluator):
         results: list[RuleCheckResult] = []
         failure_reasons: list[str] = []
 
-        # Always check for non-empty output as a baseline
+        # Siempre comprobar que la salida no esté vacía como base
         empty_result = self._check_not_empty(output)
         results.append(empty_result)
         if not empty_result.passed:
             failure_reasons.append(empty_result.message)
-            # No point running further checks on empty output
+            # No tiene sentido ejecutar más comprobaciones sobre una salida vacía
             return EvaluationResult(
                 passed=False,
                 rule_results=results,
@@ -69,7 +70,7 @@ class RuleBasedEvaluator(BaseEvaluator):
         )
 
     # ------------------------------------------------------------------
-    # Rule dispatch
+    # Despacho de reglas
     # ------------------------------------------------------------------
 
     def _apply_rule(self, rule: RuleCheck, output: str) -> RuleCheckResult:
@@ -89,12 +90,12 @@ class RuleBasedEvaluator(BaseEvaluator):
             return RuleCheckResult(
                 rule_type=rule.type,
                 passed=False,
-                message=f"Unknown rule type: '{rule.type}'",
+                message=f"Tipo de regla desconocido: '{rule.type}'",
             )
         return handler(rule, output)
 
     # ------------------------------------------------------------------
-    # Individual check implementations
+    # Implementaciones de comprobaciones individuales
     # ------------------------------------------------------------------
 
     @staticmethod

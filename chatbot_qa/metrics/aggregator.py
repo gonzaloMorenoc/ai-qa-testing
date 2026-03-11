@@ -1,8 +1,8 @@
 """
-Metrics aggregator.
+Agregador de métricas.
 
-Computes aggregate statistics from a list of TestResult objects, broken
-down by overall totals and per-category subtotals.
+Calcula estadísticas agregadas a partir de una lista de objetos TestResult,
+desglosadas en totales globales y subtotales por categoría.
 """
 
 from __future__ import annotations
@@ -20,13 +20,13 @@ from chatbot_qa.models import (
 
 def compute_metrics(results: list[TestResult]) -> Metrics:
     """
-    Compute aggregate metrics from a completed test run.
+    Calcula métricas agregadas a partir de una ejecución de tests completada.
 
     Args:
-        results: List of TestResult objects from the runner.
+        results: Lista de objetos TestResult del runner.
 
     Returns:
-        A Metrics object with overall and per-category statistics.
+        Un objeto Metrics con estadísticas globales y por categoría.
     """
     if not results:
         return Metrics(

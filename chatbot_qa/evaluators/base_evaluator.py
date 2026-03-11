@@ -1,11 +1,11 @@
 """
-Abstract base class for all evaluators.
+Clase base abstracta para todos los evaluadores.
 
-To add a new evaluator:
-  1. Subclass BaseEvaluator
-  2. Implement `applies_to` — return True for the cases this evaluator handles
-  3. Implement `evaluate` — return a partial EvaluationResult
-  4. Register the evaluator in TestRunner._build_evaluators()
+Para añadir un nuevo evaluador:
+  1. Heredar de BaseEvaluator
+  2. Implementar `applies_to` — devuelve True para los casos que maneja este evaluador
+  3. Implementar `evaluate` — devuelve un EvaluationResult parcial
+  4. Registrar el evaluador en TestRunner._build_evaluators()
 """
 
 from __future__ import annotations
@@ -16,18 +16,18 @@ from chatbot_qa.models import EvaluationResult, TestCase
 
 
 class BaseEvaluator(ABC):
-    """Contract that all evaluators must satisfy."""
+    """Contrato que todos los evaluadores deben cumplir."""
 
     @abstractmethod
     def applies_to(self, case: TestCase) -> bool:
-        """Return True if this evaluator should run for the given test case."""
+        """Devuelve True si este evaluador debe ejecutarse para el caso de prueba dado."""
 
     @abstractmethod
     def evaluate(self, case: TestCase, output: str) -> EvaluationResult:
         """
-        Evaluate the chatbot output against the test case expectations.
+        Evalúa la salida del chatbot contra las expectativas del caso de prueba.
 
-        Returns a *partial* EvaluationResult — only the fields this evaluator
-        is responsible for need to be populated. The runner merges all partial
-        results into a final EvaluationResult.
+        Devuelve un EvaluationResult *parcial* — solo deben poblarse los campos
+        de los que este evaluador es responsable. El runner fusiona todos los
+        resultados parciales en un EvaluationResult final.
         """

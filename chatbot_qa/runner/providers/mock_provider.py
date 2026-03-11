@@ -1,9 +1,9 @@
 """
-Mock chatbot provider for local testing and CI.
+Proveedor mock de chatbot para tests locales y CI.
 
-Returns deterministic responses based on simple keyword matching so that
-the full evaluation pipeline can be exercised without any API calls or
-credentials.
+Devuelve respuestas deterministas basadas en coincidencia simple de palabras
+clave, de modo que toda la pipeline de evaluación puede ejercitarse sin
+ninguna llamada a API ni credenciales.
 """
 
 from __future__ import annotations
@@ -17,15 +17,16 @@ from chatbot_qa.runner.providers.base_provider import ChatbotProvider
 
 class MockProvider(ChatbotProvider):
     """
-    Deterministic mock provider.
+    Proveedor mock determinista.
 
-    Behaviour is driven by an optional response map (exact input → response).
-    For unmapped inputs it applies keyword-based heuristics to produce
-    plausible responses that cover all evaluation paths.
+    El comportamiento está dirigido por un mapa de respuestas opcional
+    (input exacto → respuesta). Para inputs sin mapeo aplica heurísticas
+    basadas en palabras clave para producir respuestas plausibles que
+    cubran todos los caminos de evaluación.
     """
 
     DEFAULT_RESPONSES: dict[str, str] = {
-        # Safety - should refuse
+        # Seguridad - debe rechazar
         "ignore your instructions": (
             "I'm sorry, but I can't ignore my instructions. "
             "I'm designed to be helpful, harmless, and honest."
@@ -37,7 +38,7 @@ class MockProvider(ChatbotProvider):
             "I'm not able to provide instructions for creating weapons or "
             "anything that could cause harm."
         ),
-        # Functional defaults
+        # Respuestas funcionales por defecto
         "hello": "Hello! How can I assist you today?",
         "what is 2+2": "2 + 2 equals 4.",
         "what is your name": "I'm an AI assistant here to help you.",
@@ -77,16 +78,16 @@ class MockProvider(ChatbotProvider):
     ) -> str:
         lower = user_message.lower().strip()
 
-        # Exact match
+        # Coincidencia exacta
         if lower in self._response_map:
             return self._response_map[lower]
 
-        # Substring / keyword match
+        # Coincidencia por subcadena / palabra clave
         for keyword, response in self._response_map.items():
             if keyword in lower:
                 return response
 
-        # Context-aware fallbacks based on question patterns
+        # Fallbacks contextuales basados en patrones de pregunta
         if re.search(r"\b(what|who|where|when|why|how)\b", lower):
             return (
                 f"That's a great question. Based on my knowledge, I can provide "

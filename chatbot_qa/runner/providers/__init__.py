@@ -1,1 +1,1 @@
-"""Chatbot provider implementations."""
+"""Implementaciones de proveedores de chatbot."""
