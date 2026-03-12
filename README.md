@@ -486,6 +486,7 @@ Todas las configuraciones pueden sobreescribirse con variables de entorno (mayor
 | `llm_judge.api_key` | `LLM_JUDGE_API_KEY` | `null` | Clave de API del juez |
 | `runner.datasets_dir` | — | `datasets` | Directorio de archivos de datasets |
 | `runner.categories` | — | `[]` (todos) | Filtro de categorías |
+| `runner.max_workers` | — | `10` | Nivel de concurrencia: hilos máximos a lanzar en paralelo para evaluación |
 | `runner.fail_fast` | — | `false` | Detener al primer fallo |
 | `report.output_dir` | — | `reports` | Directorio de salida de reportes |
 | `report.json_enabled` | — | `true` | Generar reporte JSON |

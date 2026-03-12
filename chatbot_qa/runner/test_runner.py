@@ -21,6 +21,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+import concurrent.futures
 
 from chatbot_qa.config import Config
 from chatbot_qa.datasets.loader import load_all_datasets
@@ -99,23 +100,37 @@ class TestRunner:
             logger.warning("Advertencias del dataset:\n%s", validation.summary())
 
         results: list[TestResult] = []
-        for i, case in enumerate(cases, start=1):
-            logger.info("[%d/%d] Ejecutando: %s (%s)", i, len(cases), case.id, case.category.value)
-            result = self._run_single(case)
-            results.append(result)
+        max_workers = self._config.runner.max_workers
 
-            status_icon = "✓" if result.passed else "✗"
-            logger.info(
-                "  %s %s — status=%s duration=%.0fms",
-                status_icon,
-                case.id,
-                result.status.value,
-                result.duration_ms,
-            )
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_case = {executor.submit(self._run_single, case): case for case in cases}
 
-            if self._config.runner.fail_fast and result.status == TestStatus.FAILED:
-                logger.warning("Fail-fast activado en el caso %s", case.id)
-                break
+            for i, future in enumerate(concurrent.futures.as_completed(future_to_case), start=1):
+                case = future_to_case[future]
+                try:
+                    result = future.result()
+                    results.append(result)
+
+                    status_icon = "✓" if result.passed else "✗"
+                    logger.info(
+                        "  [%d/%d] %s %s — status=%s duration=%.0fms",
+                        i,
+                        len(cases),
+                        status_icon,
+                        case.id,
+                        result.status.value,
+                        result.duration_ms,
+                    )
+
+                    if self._config.runner.fail_fast and result.status == TestStatus.FAILED:
+                        logger.warning("Fail-fast activado en el caso %s. Cancelando el resto...", case.id)
+                        for pending_future in future_to_case:
+                            if not pending_future.done():
+                                pending_future.cancel()
+                        break
+
+                except Exception as exc:
+                    logger.exception("Error fatal inesperado durante la ejecución del caso %s: %s", case.id, exc)
 
         metrics = compute_metrics(results)
         report = Report(
