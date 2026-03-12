@@ -37,7 +37,7 @@ class LLMJudgeConfig(BaseModel):
 class RunnerConfig(BaseModel):
     datasets_dir: Path = Path("datasets")
     categories: list[str] = Field(default_factory=list)  # vacío = todas
-    max_concurrency: int = 1  # secuencial por defecto; aumentar para async
+    max_workers: int = 10  # secuencial por defecto si es 1; aumentar para async
     fail_fast: bool = False
     skip_on_error: bool = True
 
